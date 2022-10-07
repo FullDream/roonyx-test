@@ -1,5 +1,6 @@
-1. в шаболоне ошибка с тегом, открывается div, а закрывается button
-2. Убрать нижнее подчеркивание у authService в конструкторе, у нас и так обозначено что это приватный метод.
-3. Перенести все содержимое конструктора в хук ngOnInit, подписки не должны быть в конструкторе
-4. Избавиться от метода getUserName(), если есть возможность, свойство user сделать публичным и в шаболоне обращаться user?.name, но если это свойство должно быть приватным - то добавить гетер и сеттер с именами user, и так же обраться в шаболоне user?.name.
-5. Предусмотреть возможность отписки от authService.user при уничтожении компонета, для предотвращения утечки памяти, создать булевый Subject, допустим destroyed$, и добавить в authService.user в цепочку перед subscribe pipe c takeUntil(this.destroyed$), в хуке ngOnDestroy некстить true в наш destroyed$
+1. there is an error with a tag in the template, 'div' opens and 'button' closes.
+2. Remove the underscore from the 'AuthService' in the constructor, we have already indicated that this is a private method.
+3. Move all the contents of the constructor to the ngOnInit hook, 
+ there should be no subscriptions in the constructor.
+4. Get rid of the 'GetUserName()' method, if possible, make the 'user' property public and use the template 'user?.name ', but if this property should be private, then add get and set with the names user, and also address in the template (user?.name).
+5. Provide for the possibility of unsubscribing from 'AuthService.user' when the component is destroyed, to prevent memory leaks. (hook 'ngOnDestroy', 'takeUntil')
