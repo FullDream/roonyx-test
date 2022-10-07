@@ -15,11 +15,6 @@ interface Episode {
 	created: Date
 }
 
-interface EpisodesPage {
-	info: Info
-	results: Episode[]
-}
-
 interface NameAndUrl {
 	name: string
 	url: string
@@ -40,51 +35,52 @@ interface Character {
 	created: Date
 }
 
-const episodesUrl = 'https://rickandmortyapi.com/api/episode'
+interface Page<T = any> {
+	info: Info
+	results: T[]
+}
+
+const BASE_URL = 'https://rickandmortyapi.com/api'
+
+const api = {
+	episode: `${BASE_URL}/episode`,
+	character: `${BASE_URL}/character`,
+}
 
 const getApi = async <T = unknown>(url: string): Promise<T> => {
 	const res = await fetch(url)
 	return res.json()
 }
 
-const getAllEpisodes = async () => {
-	const allEpisodes: Episode[] = []
+const getAllPagesData = async <T>(initialUrl: string) => {
+	const fullData: T[] = []
 
 	const getPageRecursive = async (url: string) => {
-		const page = await getApi<EpisodesPage>(url)
-		allEpisodes.push(...page.results)
+		const page = await getApi<Page<T>>(url)
+		fullData.push(...page.results)
 
 		if (!page?.info?.next) return
 		await getPageRecursive(page.info.next)
 	}
 
-	await getPageRecursive(episodesUrl)
+	await getPageRecursive(initialUrl)
 
-	return allEpisodes
+	return fullData
 }
 
-const getAllCharactersByUrls = async (urls: string[]) => {
-	const uniqueUrls = [...new Set(urls)]
-	const cache: { [key: string]: Character } = {}
-
-	for (const item of uniqueUrls) {
-		cache[item] = await getApi<Character>(item)
-	}
-
-	return cache
-}
+const findIdInUrl = (url: string): string => url.split('/').slice(-1).toString()
 
 ;(async () => {
-	const episodes = await getAllEpisodes()
+	const episodes = await getAllPagesData<Episode>(api.episode)
 
-	const urls: string[] = []
-	episodes.forEach((episode) => urls.push(...episode.characters))
+	const charsIds: string[] = []
+	episodes.forEach((episode) => episode.characters.forEach((url) => charsIds.push(findIdInUrl(url))))
 
-	const characters = await getAllCharactersByUrls(urls)
+	const characters = await getApi<Character[]>(api.character + '/' + [...new Set(charsIds)])
 
 	const transformEpisodes = episodes.map((item) => ({
 		...item,
-		characters: item.characters.map((char) => characters[char]),
+		characters: item.characters.map((char) => characters.find(({ id }) => id === +findIdInUrl(char))),
 	}))
 
 	console.log(transformEpisodes)

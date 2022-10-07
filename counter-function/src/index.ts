@@ -8,7 +8,7 @@ const countersState: CountersState = {
 	cursor: 0,
 }
 
-const counter = (number: number = 0) => {
+const counter = (number: number = 0): (() => void | number)[] => {
 	countersState.states.push(number)
 	const currentCursor = countersState.cursor
 
